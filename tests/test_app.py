@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 
 import app as crud_app
 
@@ -52,7 +53,45 @@ def test_add_user_persists_submitted_fields(client):
         crud_app.db.select(crud_app.User).where(crud_app.User.name == "Ada Lovelace")
     )
     assert user is not None
-    assert (user.name, user.city, user.contact) == ("Ada Lovelace", "London", "ada@lovelace.net")
+    assert (user.name, user.city, user.contact) == (
+        "Ada Lovelace",
+        "London",
+        "ada@lovelace.net",
+    )
+
+
+def test_add_user_rolls_back_after_database_error(client, monkeypatch):
+    session = crud_app.db.session
+    rollback = session.rollback
+    rollback_called = False
+
+    def fail_commit():
+        raise SQLAlchemyError("simulated database failure")
+
+    def track_rollback():
+        nonlocal rollback_called
+        rollback_called = True
+        rollback()
+
+    monkeypatch.setattr(session, "commit", fail_commit)
+    monkeypatch.setattr(session, "rollback", track_rollback)
+
+    response = client.post(
+        "/add",
+        data={"name": "Ada Lovelace", "city": "London", "contact": "ada@lovelace.net"},
+    )
+
+    assert response.status_code == 500
+    assert response.text == "Error adding User!"
+    assert rollback_called
+    assert (
+        crud_app.db.session.scalar(
+            crud_app.db.select(crud_app.User).where(
+                crud_app.User.name == "Ada Lovelace"
+            )
+        )
+        is None
+    )
 
 
 def test_edit_user_updates_submitted_fields(client):
