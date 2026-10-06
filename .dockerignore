@@ -1,0 +1,10 @@
+.git/
+.pytest_cache/
+__pycache__/
+instance/
+tests/
+venv/
+.venv/
+*.py[cod]
+pytest.ini
+requirements-dev.txt
