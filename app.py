@@ -14,7 +14,6 @@ def create_app(test_config=None):
   app.config.from_mapping(
     SQLALCHEMY_DATABASE_URI="sqlite:///database.db",
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SECRET_KEY="1234abcd",
   )
   if test_config is not None:
     app.config.update(test_config)
