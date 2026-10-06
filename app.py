@@ -1,4 +1,4 @@
-from flask import Flask,request,redirect,url_for,render_template
+from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
