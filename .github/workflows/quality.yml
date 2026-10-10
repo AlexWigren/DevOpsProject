@@ -51,7 +51,7 @@ jobs:
         run: python -m pytest
 
 
-docker-build:
+  docker-build:
     needs: tests
     runs-on: ubuntu-latest
     steps:
